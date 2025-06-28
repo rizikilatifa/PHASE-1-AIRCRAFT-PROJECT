@@ -419,6 +419,67 @@ aircraft_data['Make']=aircraft_data['Make'].str.title()
 
 ```
 
+## `Model` Column
+
+
+```python
+aircraft_data['Model'].value_counts()
+```
+
+
+
+
+    Model
+    152              2367
+    172              1756
+    172N             1164
+    PA-28-140         932
+    150               829
+                     ... 
+    GC-1-A              1
+    737-3S3             1
+    MBB-BK117-B2        1
+    GLASSAIR GL25       1
+    M-8 EAGLE           1
+    Name: count, Length: 12318, dtype: int64
+
+
+
+
+```python
+aircraft_data['Model']=aircraft_data['Model'].str.upper()
+```
+
+
+```python
+aircraft_data['Model'].value_counts()
+```
+
+
+
+
+    Model
+    152                 2367
+    172                 1756
+    172N                1164
+    PA-28-140            932
+    150                  829
+                        ... 
+    E75NL                  1
+    747-273C               1
+    WATCHA-MCCALL-IT       1
+    MD-520N                1
+    M-8 EAGLE              1
+    Name: count, Length: 11646, dtype: int64
+
+
+
+
+```python
+# concatenating Make and Mode
+aircraft_data['Aircraft_type']=aircraft_data['Make']+" "+ aircraft_data['Model']
+```
+
 ## `Purpose of flight` Column
 
 
@@ -635,6 +696,12 @@ damage_counts=aircraft_data['Aircraft.damage'].value_counts()
 
 
 ```python
+#create a the intensity of a damage and the find its mean to see where they lie
+aircraft_data['Severity.Score'] = aircraft_data['Aircraft.damage'].map({'Minor': 1, 'Substantial': 2, 'Destroyed': 3})
+```
+
+
+```python
 # import matplotlib to draw graph and shows a plot inside Jupyter notebook
 import matplotlib.pyplot as plt
 %matplotlib inline
@@ -651,258 +718,855 @@ plt.show()
 
 
     
-![png](README_files/README_38_0.png)
+![png](README_files/README_44_0.png)
     
 
 
-## Creating a DataFrame with minor damages only
-
 
 ```python
-minor_damage_df= aircraft_data[aircraft_data['Aircraft.damage']=='Minor'].copy()
-```
+aircraft_data['Aircraft_type'].value_counts()
 
-## Variable of makes with minor Damages
-
-
-```python
-#create a variable that shows how many times each aircraft had a minor damage
-Makes_with_minor_damage= minor_damage_df['Make'].value_counts()
-Makes_with_minor_damage
 ```
 
 
 
 
-    Make
-    Boeing               711
-    Cessna               387
-    Piper                204
-    Beech                170
-    Mcdonnell Douglas    162
-                        ... 
-    Fitz                   1
-    Aviat                  1
-    Avian                  1
-    Buchmann               1
-    Diamond Aircraft       1
-    Name: count, Length: 314, dtype: int64
+    Aircraft_type
+    Cessna 152                  2366
+    Cessna 172                  1753
+    Cessna 172N                 1163
+    Piper PA-28-140              932
+    Cessna 150                   829
+                                ... 
+    Sherman Powell KITFOX IV       1
+    Maule M5C                      1
+    Smith SONERAI-I                1
+    Shafer SONERAI-I               1
+    Royse Ralph L GLASAIR          1
+    Name: count, Length: 18245, dtype: int64
 
 
 
 
 ```python
-# bar chart to show makes with lower damages
-top_makes = Makes_with_minor_damage.head(10)
-plt.figure(figsize=(10,6))
-plt.bar(top_makes.index, top_makes.values,edgecolor='black')
-plt.xlabel('Aircraft Make ')
-plt.ylabel('Number of Minor Damages')
-plt.title('Top 10 Aircraft Makes with Minor Damage')
-plt.show()
-```
-
-
-    
-![png](README_files/README_43_0.png)
-    
-
-
-Based on the graph, Boeing appears to be the most favorable make to consider, as it is associated with a lower risk, indicated by a higher number of incidents involving only minor damage.
-This suggests that Boeing aircraft may be more durable or better equipped to withstand incidents with minimal impact, making them a potentially safer investment for the company’s entry into the aviation industry.
-
-## Creating A Variable of Models with Minor Damage
-
-
-```python
-# crate a variable that shows the model with minor damages
-Model_with_minor_damage= minor_damage_df['Model'].value_counts()
-Model_with_minor_damage
-```
-
-
-
-
-    Model
-    737            124
-    747             38
-    777             32
-    152             29
-    402C            24
-                  ... 
-    180C             1
-    182-P            1
-    AA-5B            1
-    A-300-605R       1
-    BD-700-2A12      1
-    Name: count, Length: 1366, dtype: int64
-
-
-
-
-```python
-# Bar chart to indicate models with minor damanges
-top_models= Model_with_minor_damage.head(10)
-plt.figure(figsize=(10,6))
-plt.bar(top_models.index, top_models.values,edgecolor='black',color='orange')
-plt.xlabel('Aircraft Model ')
-plt.ylabel('Number of Minor Damages')
-plt.title('Top 10 Aircraft Models with Minor Damage')
-plt.show()
-```
-
-
-    
-![png](README_files/README_47_0.png)
-    
-
-
-From the graph above, the 737 model has the highest number of minor damage incidents, making it the most promising option for the company to consider. 
-Now we we will choose the make and the model with the highest number of minor Damages to be aour best option to consider
-
-
-```python
-# create a dataframe with make being boeing and model 737
-aircraft_minor_risk_df=minor_damage_df[(minor_damage_df['Make']== 'Boeing') & (minor_damage_df['Model']=='737')].copy()
-```
-
-## Checking Engine Type
-
-
-```python
-#Checking the number of unique engine types
-aircraft_minor_risk_df['Engine.Type'].value_counts()
-```
-
-
-
-
-    Engine.Type
-    Turbo Fan    8
-    Name: count, dtype: int64
-
-
-
-
-```python
-## fill the non values with Turbo Fan
-aircraft_minor_risk_df['Engine.Type']=aircraft_minor_risk_df['Engine.Type'].fillna('Turbo Fan')
+safety_df= aircraft_data.pivot_table(index='Aircraft_type', columns= 'Aircraft.damage' ,values ='Event.Id',aggfunc='count',fill_value=0)
 ```
 
 
 ```python
-## fill the non values with Turbo Fan
-minor_damage_df.loc[(minor_damage_df['Make']=='Boeing') & (minor_damage_df['Engine.Type'].isna() & minor_damage_df['Model']=='737'),'Engine.Type']= 'Turbo Fan'
+minor_damages_safe=safety_df[(safety_df['Destroyed']==0) & (safety_df['Minor']==1) & (safety_df['Substantial']==0)]
+minor_damages_safe
 ```
 
 
-We have filled the missing values `Engine.Type` with `Turbo Fan` based on research confirming that the Boeing 737 uses the Turbo fan engine [Boeing 737](https://en.wikipedia.org/wiki/Boeing_737?utm_source) . 
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Aircraft.damage</th>
+      <th>Destroyed</th>
+      <th>Minor</th>
+      <th>Substantial</th>
+      <th>Unknown</th>
+    </tr>
+    <tr>
+      <th>Aircraft_type</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2007 Savage Air Llc EPIC LT</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Abruzzo GROM-1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Aero Commander 681B</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Aerospatiale A-300B4</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Aerospatiale ATR-42</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>Unknown GLIDER TRYKE</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Us/Lta 138-S</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Wayne Hooks CASSUTT III-M</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Wizard W-1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Young Robert Herman WOODY PUSHER</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>566 rows × 4 columns</p>
+</div>
+
+
+
+
+```python
+aircrafts_safe_list= list(minor_damages_safe.index)
+```
 
 # Number of engines
 ![Aircraft Engine](./image/airplane_engine.jpg)
 
 
 ```python
-#Checking the number of enginees our safe aircraft should have 
-aircraft_minor_risk_df['Number.of.Engines'].value_counts()
+#grouping the number of engines to the aircraft damage
+safe_numberof_engines=aircraft_data.pivot_table(index='Number.of.Engines', columns= 'Aircraft.damage' ,values ='Event.Id',aggfunc='count',fill_value=0)
+safe_numberof_engines
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Aircraft.damage</th>
+      <th>Destroyed</th>
+      <th>Minor</th>
+      <th>Substantial</th>
+      <th>Unknown</th>
+    </tr>
+    <tr>
+      <th>Number.of.Engines</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0.0</th>
+      <td>173</td>
+      <td>74</td>
+      <td>842</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1.0</th>
+      <td>13862</td>
+      <td>726</td>
+      <td>54565</td>
+      <td>50</td>
+    </tr>
+    <tr>
+      <th>2.0</th>
+      <td>2871</td>
+      <td>1095</td>
+      <td>5868</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>3.0</th>
+      <td>25</td>
+      <td>197</td>
+      <td>104</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4.0</th>
+      <td>58</td>
+      <td>145</td>
+      <td>114</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6.0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8.0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+engine_number_score=aircraft_data.groupby('Number.of.Engines')['Severity.Score'].mean().sort_values()
+engine_number_score
 ```
 
 
 
 
     Number.of.Engines
-    2.0    30
-    Name: count, dtype: int64
+    3.0    1.472393
+    4.0    1.725552
+    6.0    2.000000
+    8.0    2.000000
+    0.0    2.090909
+    2.0    2.180598
+    1.0    2.189956
+    Name: Severity.Score, dtype: float64
 
 
 
 
 ```python
-aircraft_minor_risk_df['Number.of.Engines']=aircraft_minor_risk_df['Number.of.Engines'].fillna(2.0)
+safe_engine_numbers= list(engine_number_score[engine_number_score < 2].index)
+safe_engine_numbers
 ```
 
-Missing values in the Number.of.Engines column have been filled with 2.0, based on verified information from [Wikipedia](https://en.wikipedia.org/wiki/Boeing_737_Next_Generation#:~:text=The%20Boeing%20737%20Next%20Generation,has%20been%20produced%20since%201997.&text=The%20737%2D800%20is%20the%20best%2Dselling%20737NG%20variant.), which confirms that all Boeing 737 aircraft are equipped with two engines. This imputation ensures data consistency and aligns with the known specifications of the aircraft model.
+
+
+
+    [3.0, 4.0]
+
+
+
+Its safe to assume that 3 and 4 engines are the most safer due to the minor severity score
+
+
+```python
+# plotting a graph to indicate number of engines by aircraft dama
+fig,ax= plt.subplots(figsize=(10,6))
+
+# plotting a stacked bar graph
+safe_numberof_engines.plot(kind='bar', stacked=True, ax=ax, colormap='Set3')
+
+# customize the chart
+ax.set_title('Aircraft Damage by Number of Engines')
+ax.set_xlabel('Number of Engines')
+ax.set_ylabel('Number of Incidents')
+ax.legend(title='Aircraft Damage Type')
+plt.xticks(rotation=0)
+plt.tight_layout()
+
+plt.show()
+```
+
+
+    
+![png](README_files/README_54_0.png)
+    
+
+
+# Incidents and Accidents by Number of Engines
+
+
+```python
+#Group and count combinations of Engine count vs Type of investigation
+engine_investigation_counts = aircraft_data.groupby(['Number.of.Engines', 'Investigation.Type']).size().unstack(fill_value=0)
+
+# Rename the columns for clarity
+engine_investigation_counts.columns = ['Incident (0)', 'Accident (1)']
+
+# Plot using fig and ax
+fig, ax = plt.subplots(figsize=(8, 6))
+engine_investigation_counts.plot(kind='bar', ax=ax, color=['skyblue', 'salmon'])
+
+#Customize the plot
+ax.set_title('Incidents and Accidents by Number of Engines')
+ax.set_xlabel('Number of Engines')
+ax.set_ylabel('Count')
+ax.legend(title='Type of Investigation')
+ax.set_xticklabels(engine_investigation_counts.index.astype(str),rotation=0)
+
+#Show the plot
+plt.tight_layout()
+plt.show()
+
+
+```
+
+
+    
+![png](README_files/README_56_0.png)
+    
+
+
+Observation: aircrafts with one engine has the most accidents 
+
+# Type of engines by damages
+
+
+```python
+safe_type_of_engines=aircraft_data.pivot_table(index='Engine.Type', columns= 'Aircraft.damage' ,values ='Event.Id',aggfunc='count',fill_value=0)
+safe_type_of_engines
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Aircraft.damage</th>
+      <th>Destroyed</th>
+      <th>Minor</th>
+      <th>Substantial</th>
+      <th>Unknown</th>
+    </tr>
+    <tr>
+      <th>Engine.Type</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Electric</th>
+      <td>2</td>
+      <td>0</td>
+      <td>8</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Geared Turbofan</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Hybrid Rocket</th>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>LR</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>NONE</th>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Reciprocating</th>
+      <td>14529</td>
+      <td>853</td>
+      <td>53805</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>Turbo Fan</th>
+      <td>196</td>
+      <td>670</td>
+      <td>730</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Turbo Jet</th>
+      <td>140</td>
+      <td>162</td>
+      <td>234</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Turbo Prop</th>
+      <td>807</td>
+      <td>306</td>
+      <td>2035</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Turbo Shaft</th>
+      <td>879</td>
+      <td>91</td>
+      <td>2549</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>UNK</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Unknown</th>
+      <td>544</td>
+      <td>132</td>
+      <td>1133</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+ engine_score=aircraft_data.groupby('Engine.Type')['Severity.Score'].mean().sort_values()
+```
+
+
+```python
+# create a list of engine type with less than 2 score
+safe_engine_type = list(engine_score[engine_score < 2].index)
+safe_engine_type
+```
+
+
+
+
+    ['Geared Turbofan', 'Turbo Fan', 'Turbo Jet']
+
+
 
 ## Weather Condition with Higher number of damages 
 
 
 ```python
-aircraft_minor_risk_df['Weather.Condition'].value_counts()
+aircraft_data['Weather.Condition'].value_counts()
 ```
 
 
 
 
     Weather.Condition
-    VMC    121
-    IMC      2
-    UNK      1
+    VMC    81795
+    IMC     5976
+    UNK     1118
     Name: count, dtype: int64
 
 
 
 A number of incidents occurred under favorable weather conditions `VMC`. This suggests that weather may not have been the primary contributing factor in these cases. Further analysis is needed to explore other contributing factors such as pilot experience, mechanical failure, or maintenance history."
 
-## Getting the report and cause of accident/Incident
-
-
 
 ```python
-#using list comprehension to get reports 
-unique_reports= [print(report) for  report in (aircraft_minor_risk_df['Report.Status'].dropna())]
-unique_reports
+# graph showing how weather condition infuenced incidents and accidents
+engine_investigation_counts = aircraft_data.groupby(['Weather.Condition', 'Investigation.Type']).size().unstack(fill_value=0)
+
+# Rename the columns for clarity
+engine_investigation_counts.columns = ['Incident (0)', 'Accident (1)']
+
+# Plot using fig and ax
+fig, ax = plt.subplots(figsize=(8, 6))
+engine_investigation_counts.plot(kind='bar', ax=ax, color=['skyblue', 'orange'])
+
+#Customize the plot
+ax.set_title('Incidents and Accidents by Number of Engines')
+ax.set_xlabel('Weather Condition')
+ax.set_ylabel('Count')
+ax.legend(title='Type of Investigation', loc= 2)
+ax.set_xticklabels(engine_investigation_counts.index.astype(str),rotation=0)
+
+#Show the plot
+plt.tight_layout()
+plt.show()
+
+
 ```
 
-    The failure of the MLG was due to cracking in the cylinder wall resulting from a fatigue mechanism which initiated at, and near the inner diameter (ID) surface, with propagation through the wall toward the outer diameter(OD) surface. Crack initiation was due to base metal damage which took the form of over tempered martensite (OTM) and chemical attack/pitting of the base metal.
-    The right nose landing gear axle's failure from intergranular and fatigue cracking due to an earlier bearing failure.
-    The pilot's inadvertent application of excessive braking after touchdown, which caused the right wheels to lock and several tires to blow and resulted in a subsequent brake fire.
-    The failure of the right main landing gear inboard axle due to fatigue cracking as a result of fretting damage in one of the brake mounting bolt holes.
-    <br /><br />
-    <br /><br />
-    <br /><br />
-    <br /><br />
-    The gate lead/pushback driver's failure to recognize that the provisioning truck was within the safety zone of the gate during his walkaround due to distractions, which resulted in the subsequent collision between the airplane and the truck. Contributing to the collision was the provisioning truck driver's failure to recognize he was parked in the safety zone of an active gate adjacent to his assigned gate, and the guide agent's improper assumption that the safety zone was properly cleared by the gate lead/pushback driver.
-    N925NN flight crew's incorrect evaluation of the clearance between the two aircraft, leading to the inadvertent collision of the winglet with the horizontal stabilizer and elevator of N784SW.
+
+    
+![png](README_files/README_65_0.png)
     
 
 
+## Grouping the purpose of flight to Aircraft.damage
 
 
-    [None, None, None, None, None, None, None, None, None, None]
+
+```python
+purpose_safety=aircraft_data.pivot_table(index='Purpose.of.flight', columns= 'Aircraft.damage' ,values ='Event.Id',aggfunc='count',fill_value=0)
+purpose_safety.sort_values(by='Substantial', ascending = False)
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Aircraft.damage</th>
+      <th>Destroyed</th>
+      <th>Minor</th>
+      <th>Substantial</th>
+      <th>Unknown</th>
+    </tr>
+    <tr>
+      <th>Purpose.of.flight</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Personal</th>
+      <td>11678</td>
+      <td>1380</td>
+      <td>40505</td>
+      <td>99</td>
+    </tr>
+    <tr>
+      <th>Instructional</th>
+      <td>1212</td>
+      <td>159</td>
+      <td>9146</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>Aerial Application</th>
+      <td>1069</td>
+      <td>28</td>
+      <td>3600</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Unknown</th>
+      <td>1745</td>
+      <td>895</td>
+      <td>3337</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Business</th>
+      <td>1186</td>
+      <td>107</td>
+      <td>2630</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>Positioning</th>
+      <td>412</td>
+      <td>72</td>
+      <td>1119</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Other Work Use</th>
+      <td>266</td>
+      <td>44</td>
+      <td>896</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Ferry</th>
+      <td>235</td>
+      <td>27</td>
+      <td>543</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Aerial Observation</th>
+      <td>225</td>
+      <td>12</td>
+      <td>536</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Public Aircraft</th>
+      <td>209</td>
+      <td>20</td>
+      <td>478</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Executive/corporate</th>
+      <td>159</td>
+      <td>33</td>
+      <td>331</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>Flight Test</th>
+      <td>68</td>
+      <td>7</td>
+      <td>322</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Skydiving</th>
+      <td>38</td>
+      <td>9</td>
+      <td>131</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>External Load</th>
+      <td>16</td>
+      <td>0</td>
+      <td>99</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Banner Tow</th>
+      <td>9</td>
+      <td>0</td>
+      <td>92</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Public Aircraft - Federal</th>
+      <td>18</td>
+      <td>0</td>
+      <td>84</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Public Aircraft - Local</th>
+      <td>3</td>
+      <td>1</td>
+      <td>65</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Air Race show</th>
+      <td>20</td>
+      <td>6</td>
+      <td>64</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Public Aircraft - State</th>
+      <td>7</td>
+      <td>1</td>
+      <td>53</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Glider Tow</th>
+      <td>5</td>
+      <td>1</td>
+      <td>47</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Air Race/show</th>
+      <td>20</td>
+      <td>3</td>
+      <td>33</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Firefighting</th>
+      <td>15</td>
+      <td>0</td>
+      <td>23</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Air Drop</th>
+      <td>4</td>
+      <td>0</td>
+      <td>7</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>PUBS</th>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>ASHO</th>
+      <td>4</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>PUBL</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
 
 
 ```python
-aircraft_minor_risk_df['Purpose.of.flight'].value_counts()
+safety_by_purpose = aircraft_data.groupby('Purpose.of.flight')['Severity.Score'].mean().sort_values()
+safety_by_purpose
 ```
 
 
 
 
     Purpose.of.flight
-    Personal    123
-    Business      1
-    Name: count, dtype: int64
+    PUBS                         2.000000
+    PUBL                         2.000000
+    Public Aircraft - Local      2.028986
+    Glider Tow                   2.075472
+    Banner Tow                   2.089109
+    Public Aircraft - State      2.098361
+    Instructional                2.100124
+    External Load                2.139130
+    Unknown                      2.142212
+    Flight Test                  2.153652
+    Air Race show                2.155556
+    Skydiving                    2.162921
+    Public Aircraft - Federal    2.176471
+    Other Work Use               2.184080
+    Personal                     2.192260
+    Positioning                  2.212102
+    Aerial Application           2.221631
+    Executive/corporate          2.240918
+    Ferry                        2.258385
+    Public Aircraft              2.267327
+    Business                     2.275045
+    Aerial Observation           2.275550
+    Air Race/show                2.303571
+    Air Drop                     2.363636
+    Firefighting                 2.394737
+    ASHO                         2.666667
+    Name: Severity.Score, dtype: float64
 
 
 
+Observation: most severity score lie on 2. ,this means that most damage is substantial since, thats the score of the substantial. 
 
-```python
-aircraft_minor_risk_df['Purpose.of.flight']=aircraft_minor_risk_df['Purpose.of.flight'].replace('Personal', 'Business')
-
-```
-
-Reason for this, after doing research The boring 737 is commercial airliner designed and manufuctured by the Boeng Company. More info on this  [Boeing 737](https://www.ebsco.com/research-starters/science/boeing-737#:~:text=Boeing%20737-,The%20Boeing%20737%20is%20a%20twinjet%20narrow%2Dbody%20commercial%20airliner,history%20of%20commercial%20air%20travel.)
+## Graph indicating the number of incidents over the years
 
 
 ```python
 # change the 'Event.date' to a datetime format
-aircraft_minor_risk_df['Event.Date']=pd.to_datetime(aircraft_minor_risk_df['Event.Date'])
+aircraft_data['Event.Date']=pd.to_datetime(aircraft_data['Event.Date'])
 # Extract the year
-aircraft_minor_risk_df['Event.Year'] = aircraft_minor_risk_df['Event.Date'].dt.year
+aircraft_data['Event.Year'] = aircraft_data['Event.Date'].dt.year
 # filter for incidents only
-incidents_df=aircraft_minor_risk_df[aircraft_minor_risk_df['Investigation.Type'] ==0]
+incidents_df=aircraft_data[aircraft_data['Investigation.Type'] ==0]
 #count incidents per year
 incidents_per_year= incidents_df['Event.Year'].value_counts().sort_index()
 #plot
@@ -916,22 +1580,22 @@ plt.show()
 
 
     
-![png](README_files/README_67_0.png)
+![png](README_files/README_71_0.png)
     
 
 
-The highest incidents were in 2017 and 2019
+2010 had the highest number of incidents
 
-## Checking best Aircraft for Personal purposes
+## Checking Number of accidents over the years
 
 
 ```python
-accidents_df=aircraft_minor_risk_df[aircraft_minor_risk_df['Investigation.Type'] ==1]
+accidents_df=aircraft_data[aircraft_data['Investigation.Type'] ==1]
 #count incidents per year
 accidents_per_year= accidents_df['Event.Year'].value_counts().sort_index()
 #plot
-fig, ax =plt.subplots(figsize=(10,6))
-accidents_per_year.plot(kind='barh', ax=ax,color='blue') 
+fig, ax =plt.subplots(figsize=(10,8))
+accidents_per_year.plot(kind='bar', ax=ax,color='salmon') 
 ax.set_xlabel('Year')
 ax.set_ylabel('Number of accidents')
 ax.set_title('Number of accidents over the years')
@@ -940,187 +1604,23 @@ plt.show()
 
 
     
-![png](README_files/README_70_0.png)
+![png](README_files/README_74_0.png)
     
 
 
-The number of accident seem to occur concurrently in the year 2017,2018 and 2019. We can do research to know what changes were made that maybe caused this consistent accidents
-
-## Creating a data frame with Purpose of flight being `Personal`
-
-Applying changes made to our Boeing 737 to the `minor_damage_df` DataFrame
+The number of accidents over the years appears to be decreasing, which is a positive indication. This trend may suggest improvements in aircraft technology, safety regulations, pilot training, or maintenance practices over time.
 
 
 ```python
-minor_damage_df.loc[(minor_damage_df['Make']=='Boeing') & (minor_damage_df['Engine.Type'].isna() & minor_damage_df['Model']=='737'),'Engine.Type']= 'Turbo Fan'
+#Checking the best aircrfat from the observation we made above
+filtered_df= aircraft_data[(aircraft_data['Aircraft_type'].isin(aircrafts_safe_list))
+& (aircraft_data['Engine.Type'].isin(safe_engine_type)) 
+& (aircraft_data['Number.of.Engines'].isin(safe_engine_numbers))]
 ```
 
 
 ```python
-minor_damage_df.loc[(minor_damage_df['Make']=='Boeing') & (minor_damage_df['Model']=='737'),'Purpose.of.flight']= 'Business'
-```
-
-
-```python
-minor_damage_df.loc[(minor_damage_df['Make']=='Boeing') & (minor_damage_df['Number.of.Engines'].isna()),'Number.of.Engines']= 2.0
-```
-
-
-```python
-minor_personal_damage=minor_damage_df[minor_damage_df['Purpose.of.flight']=='Personal']
-```
-
-
-```python
-# Checking personal aircraft with minor damages
-minor_personal_damage['Make'].value_counts()
-```
-
-
-
-
-    Make
-    Boeing      292
-    Cessna      181
-    Piper        83
-    Beech        61
-    Airbus       58
-               ... 
-    Aviat         1
-    Avian         1
-    Buchmann      1
-    Franz         1
-    Ayres         1
-    Name: count, Length: 226, dtype: int64
-
-
-
-
-```python
-#Model with  minor damages
-minor_personal_damage['Model'].value_counts()
-```
-
-
-
-
-    Model
-    747            35
-    777            30
-    CL-600-2B19    17
-    767            15
-    757            13
-                   ..
-    200C            1
-    CL600-2B19      1
-    747-100         1
-    T6G             1
-    BD-700-2A12     1
-    Name: count, Length: 759, dtype: int64
-
-
-
-Dataframe with Make being `Boeing` and model `747`
-
-
-```python
-personal_747_df=minor_personal_damage[(minor_personal_damage['Model']== '747') & (minor_personal_damage['Make']=='Boeing')].copy()
-```
-
-
-```python
-#Checking The type of engine
-personal_747_df['Engine.Type'].value_counts()
-```
-
-
-
-
-    Engine.Type
-    Turbo Fan    10
-    Name: count, dtype: int64
-
-
-
-
-```python
-personal_747_df['Engine.Type']=personal_747_df['Engine.Type'].fillna('Turbo Fan')
-```
-
-Reason for this is Boeing 747 uses Turbo Fan. More info in [Boeing 747 Design](https://www.boeing.com/commercial/747-8/design-highlights#technologically-advanced)
-
-
-```python
-#Checking Number of Engines 
-personal_747_df['Number.of.Engines'].value_counts()
-```
-
-
-
-
-    Number.of.Engines
-    4.0    18
-    2.0    17
-    Name: count, dtype: int64
-
-
-
-
-```python
-# getting the number of engines with the type of accident/incident
-personal_747_df[['Number.of.Engines','Investigation.Type']].value_counts()
-```
-
-
-
-
-    Number.of.Engines  Investigation.Type
-    2.0                0                     17
-    4.0                0                     15
-                       1                      3
-    Name: count, dtype: int64
-
-
-
-From the above output we can conclude that both the Turbo Fan with 2 engines and 4 engines are safe. Shows that incidents are more frequent than accidents which is possibly a good sign for aviation safety
-
-
-```python
-# Step 1: Group and count combinations of Engine count vs Type of investigation
-engine_investigation_counts = personal_747_df.groupby(['Number.of.Engines', 'Investigation.Type']).size().unstack(fill_value=0)
-
-# Step 2: Rename the columns for clarity
-engine_investigation_counts.columns = ['Incident (0)', 'Accident (1)']
-
-# Step 3: Plot using fig and ax
-fig, ax = plt.subplots(figsize=(8, 6))
-engine_investigation_counts.plot(kind='bar', ax=ax, color=['skyblue', 'salmon'])
-
-# Step 4: Customize the plot
-ax.set_title('Incidents and Accidents by Number of Engines')
-ax.set_xlabel('Number of Engines')
-ax.set_ylabel('Count')
-ax.legend(title='Type of Investigation')
-ax.set_xticklabels(engine_investigation_counts.index.astype(str), rotation=0)
-
-# Step 5: Show the plot
-plt.tight_layout()
-plt.show()
-
-
-```
-
-
-    
-![png](README_files/README_88_0.png)
-    
-
-
-This also confirms the above observation that a missing engine may be associated with higherr risk.
-
-
-```python
-personal_747_df.head()
+filtered_df
 ```
 
 
@@ -1155,9 +1655,6 @@ personal_747_df.head()
       <th>Airport.Code</th>
       <th>Airport.Name</th>
       <th>...</th>
-      <th>FAR.Description</th>
-      <th>Purpose.of.flight</th>
-      <th>Total.Fatal.Injuries</th>
       <th>Total.Serious.Injuries</th>
       <th>Total.Minor.Injuries</th>
       <th>Total.Uninjured</th>
@@ -1165,160 +1662,303 @@ personal_747_df.head()
       <th>Broad.phase.of.flight</th>
       <th>Report.Status</th>
       <th>Publication.Date</th>
+      <th>Aircraft_type</th>
+      <th>Severity.Score</th>
+      <th>Event.Year</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>4150</th>
-      <td>20001214X42478</td>
-      <td>0</td>
-      <td>LAX83IA149A</td>
-      <td>1983-03-18</td>
-      <td>LOS ANGELES, CA</td>
+      <th>230</th>
+      <td>20020917X01910</td>
+      <td>1</td>
+      <td>DCA82AA014</td>
+      <td>1982-02-03</td>
+      <td>PHILADELPHIA, PA</td>
       <td>United States</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>LAX</td>
-      <td>LOS ANGELES INTL</td>
+      <td>PHL</td>
+      <td>PHILADELPHIA INTL</td>
       <td>...</td>
-      <td>Part 129: Foreign</td>
-      <td>Personal</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>154.0</td>
+      <td>IMC</td>
+      <td>Takeoff</td>
+      <td>Probable Cause</td>
+      <td>03-02-1983</td>
+      <td>Mcdonnell-Douglas DC-10-10</td>
+      <td>1.0</td>
+      <td>1982</td>
+    </tr>
+    <tr>
+      <th>3578</th>
+      <td>20020917X04671</td>
+      <td>0</td>
+      <td>FTW83IA072</td>
+      <td>1982-12-30</td>
+      <td>THERMAL, CA</td>
+      <td>United States</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TRM</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>14.0</td>
+      <td>203.0</td>
+      <td>VMC</td>
+      <td>Climb</td>
+      <td>Probable Cause</td>
+      <td>30-12-1983</td>
+      <td>Mcdonnell-Douglas DC-10-30</td>
+      <td>NaN</td>
+      <td>1982</td>
+    </tr>
+    <tr>
+      <th>4080</th>
+      <td>20001214X42476</td>
+      <td>0</td>
+      <td>LAX83IA140</td>
+      <td>1983-03-11</td>
+      <td>MINA, NV</td>
+      <td>United States</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>588.0</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>186.0</td>
+      <td>VMC</td>
+      <td>Climb</td>
+      <td>Probable Cause</td>
+      <td>NaN</td>
+      <td>Mcdonnell Douglas DC 8-61</td>
+      <td>1.0</td>
+      <td>1983</td>
+    </tr>
+    <tr>
+      <th>4764</th>
+      <td>20001214X42949</td>
+      <td>0</td>
+      <td>DEN83IA119</td>
+      <td>1983-05-23</td>
+      <td>COLORADO SPRING, CO</td>
+      <td>United States</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>25.0</td>
       <td>VMC</td>
       <td>Taxi</td>
       <td>Probable Cause</td>
-      <td>04-12-2014</td>
+      <td>NaN</td>
+      <td>Boeing 727-31H</td>
+      <td>1.0</td>
+      <td>1983</td>
     </tr>
     <tr>
-      <th>52199</th>
-      <td>20090625X31711</td>
+      <th>5476</th>
+      <td>20001214X43869</td>
       <td>0</td>
-      <td>DCA02RA024</td>
-      <td>2002-03-01</td>
-      <td>Sydney, Australia</td>
+      <td>MKC83IA159</td>
+      <td>1983-07-16</td>
+      <td>ST. LOUIS, MO</td>
+      <td>United States</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>STL</td>
+      <td>LAMBERT-ST. LOUIS INTL.</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>65.0</td>
+      <td>VMC</td>
+      <td>Taxi</td>
+      <td>Probable Cause</td>
+      <td>NaN</td>
+      <td>Boeing 727-231A</td>
+      <td>1.0</td>
+      <td>1983</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>73107</th>
+      <td>20130118X53100</td>
+      <td>1</td>
+      <td>DCA13LA039</td>
+      <td>2013-01-17</td>
+      <td>Miami, FL</td>
+      <td>United States</td>
+      <td>254725N</td>
+      <td>0801630W</td>
+      <td>MIA</td>
+      <td>Miami Intl</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>397.0</td>
+      <td>VMC</td>
+      <td>NaN</td>
+      <td>LV-BMT flight crew's incorrect evaluation of t...</td>
+      <td>25-09-2020</td>
+      <td>Airbus A340 - 300</td>
+      <td>1.0</td>
+      <td>2013</td>
+    </tr>
+    <tr>
+      <th>74427</th>
+      <td>20131126X01052</td>
+      <td>0</td>
+      <td>ENG14WA003</td>
+      <td>2013-10-24</td>
+      <td>Norwich, Norfolk, UK, United Kingdom</td>
+      <td>United Kingdom</td>
+      <td>524033N</td>
+      <td>0011658E</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>VMC</td>
+      <td>NaN</td>
+      <td>&lt;br /&gt;&lt;br /&gt;</td>
+      <td>03-11-2020</td>
+      <td>Bae Systems (Operations) Limit AVRO 146-RJ85</td>
+      <td>1.0</td>
+      <td>2013</td>
+    </tr>
+    <tr>
+      <th>75002</th>
+      <td>20140522X83340</td>
+      <td>0</td>
+      <td>ENG14RA014</td>
+      <td>2014-04-29</td>
+      <td>Perth, Australia, Australia</td>
       <td>Australia</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>SDY</td>
-      <td>Sydney</td>
+      <td>PER</td>
+      <td>Perth</td>
       <td>...</td>
-      <td>Non-U.S., Commercial</td>
-      <td>Personal</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>VMC</td>
-      <td>NaN</td>
-      <td>Foreign</td>
-      <td>07-07-2009</td>
-    </tr>
-    <tr>
-      <th>60171</th>
-      <td>20090617X33239</td>
-      <td>0</td>
-      <td>ENG06WA009</td>
-      <td>2006-02-01</td>
-      <td>Istanbul, Turkey</td>
-      <td>Turkey</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>IST</td>
-      <td>Istanbul, Turkey</td>
-      <td>...</td>
-      <td>Non-U.S., Commercial</td>
-      <td>Personal</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>VMC</td>
-      <td>NaN</td>
-      <td>Foreign</td>
-      <td>29-06-2009</td>
-    </tr>
-    <tr>
-      <th>64387</th>
-      <td>20081003X63355</td>
-      <td>0</td>
-      <td>ENG08IA022</td>
-      <td>2008-04-20</td>
-      <td>Newark, NJ</td>
-      <td>United States</td>
-      <td>404427N</td>
-      <td>0741014W</td>
-      <td>EWR</td>
-      <td>Newark Liberty International</td>
-      <td>...</td>
-      <td>121</td>
-      <td>Personal</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>5.0</td>
-      <td>VMC</td>
-      <td>NaN</td>
-      <td>An engine fire in the No. 3 engine due to the ...</td>
-      <td>25-09-2020</td>
-    </tr>
-    <tr>
-      <th>67558</th>
-      <td>20100106X21356</td>
-      <td>0</td>
-      <td>ENG10RA009</td>
-      <td>2009-12-17</td>
-      <td>Changi Airport, Senegal</td>
-      <td>Senegal</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>NUSC</td>
-      <td>Personal</td>
-      <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>VMC</td>
       <td>NaN</td>
-      <td>NaN</td>
+      <td>&lt;br /&gt;&lt;br /&gt;</td>
       <td>03-11-2020</td>
+      <td>Bae AVRO146RJ - 100</td>
+      <td>1.0</td>
+      <td>2014</td>
+    </tr>
+    <tr>
+      <th>75950</th>
+      <td>20141029X71059</td>
+      <td>0</td>
+      <td>DCA15WA015</td>
+      <td>2014-10-22</td>
+      <td>Frankfurt, Germany</td>
+      <td>Germany</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>VMC</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>25-09-2020</td>
+      <td>Boeing 747 422</td>
+      <td>1.0</td>
+      <td>2014</td>
+    </tr>
+    <tr>
+      <th>80847</th>
+      <td>20171114X30932</td>
+      <td>0</td>
+      <td>ENG18RA004</td>
+      <td>2017-11-08</td>
+      <td>Johannesburg, South Africa</td>
+      <td>South Africa</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>VMC</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>25-09-2020</td>
+      <td>British Aerospace AVRO  146</td>
+      <td>1.0</td>
+      <td>2017</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 29 columns</p>
+<p>88 rows × 32 columns</p>
 </div>
 
 
 
 
 ```python
-# plot of the accidents over the years 
-# change the 'Event.date' to a datetime format
-personal_747_df['Event.Date']=pd.to_datetime(personal_747_df['Event.Date'])
-# Extract the year
-personal_747_df['Event.Year'] = personal_747_df['Event.Date'].dt.year
-# filter for incidents only
-incidents_df=personal_747_df[personal_747_df['Investigation.Type'] ==0]
-#count incidents per year
-incidents_per_year= incidents_df['Event.Year'].value_counts().sort_index()
-#plot
-fig, ax =plt.subplots(figsize=(10,6))
-incidents_per_year.plot(kind='barh', ax=ax,color='lightblue') 
-ax.set_xlabel('Year')
-ax.set_ylabel('Number of Incidents')
-ax.set_title('Number of incidents over the years')
-plt.show()
+#importing cleaned version
+filtered_df.to_csv('Cleaned_Data.csv', index= True)
 ```
 
+# Conclusion
+**1. Trends in Accidents**
+Accidents have significantly decreased over time, which is a sign of continuous advancements in aviation technology, safety rules, training requirements, and maintenance procedures.
 
-    
-![png](README_files/README_91_0.png)
-    
+**2. Safety and Engine Configuration**
+Single-engine aircraft suffered the most significant and total destruction, though this may have more to do with their frequent use in general aviation than with any inherent danger. Although multi-engine aircraft tend to appear slightly safer in severity scoring, no engine type is significantly riskier when normalised by damage severity scores.
 
+**3. Type of Engine and Safety**
+Engines with an average severity score of less than two, which prioritises minor damage over significant or destroyed damage, seem to be the safest. We filter our dataframe so that `Engine.Type`are only those with minor damages. These engine types could be prioritised when considering aircraft design and procurement
 
-2010 had the highest number of incidents at 12. This has leptokurtic distitribution
+**4. Incident and accident**
+Both incident and accident types provide essential insights for aviation safety investigations. Incidents reveal underlying hazards and near-misses that can be addressed proactively, while accidents highlight the consequences of unresolved risks. Analyzing both helps us form a comprehensive view of aircraft safety, identify patterns, and recommend effective preventive strategies..
+
+## Properties of Safer Aircraft
+1. Use safer engine types(with severity score < 2)
+2. Have more than one engine( with severity score < 2)
+3. Belong to the safer aircraft type
