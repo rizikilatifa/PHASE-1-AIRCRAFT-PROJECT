@@ -1962,3 +1962,8 @@ Both incident and accident types provide essential insights for aviation safety 
 1. Use safer engine types(with severity score < 2)
 2. Have more than one engine( with severity score < 2)
 3. Belong to the safer aircraft type
+
+# My Tableau Dashboard
+To view this dashboard
+1. Download this repository
+2. Open the [link](https://public.tableau.com/app/profile/latifa.riziki/viz/Phase1TableauDashboard/Dashboard1?publish=yes)
