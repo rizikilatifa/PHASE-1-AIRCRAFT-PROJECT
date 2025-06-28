@@ -1626,7 +1626,7 @@ accidents_df=aircraft_data[aircraft_data['Investigation.Type'] ==1]
 accidents_per_year= accidents_df['Event.Year'].value_counts().sort_index()
 #plot
 fig, ax =plt.subplots(figsize=(10,8))
-accidents_per_year.plot(kind='bar', ax=ax,color='salmon') 
+accidents_per_year.plot(kind='barh', ax=ax,color='salmon') 
 ax.set_xlabel('Year')
 ax.set_ylabel('Number of accidents')
 ax.set_title('Number of accidents over the years')
@@ -1967,6 +1967,156 @@ filtered_df
 </table>
 <p>88 rows × 32 columns</p>
 </div>
+
+
+
+
+```python
+filtered_df['Aircraft_type'].unique()
+```
+
+
+
+
+    array(['Mcdonnell-Douglas DC-10-10', 'Mcdonnell-Douglas DC-10-30',
+           'Mcdonnell Douglas DC 8-61', 'Boeing 727-31H', 'Boeing 727-231A',
+           'Boeing B727-023', 'Boeing 727-21', 'Lockheed 1329-25',
+           'Boeing B-727-90C', 'Boeing 747-230', 'British Aerospace BAE-146',
+           'Mcdonnell Douglas DC-8-73', 'Mcdonnell Douglas DC-8-54',
+           'Mcdonnell Douglas DC-8-71', 'Boeing 727-51', 'Boeing 727-200B',
+           'Boeing 727-023', 'Boeing 727-25C', 'Boeing 727-25',
+           'Boeing 727-22C', 'Mcdonnell Douglas DC-10', 'Boeing 727-122',
+           'Boeing 707-323B', 'Boeing 747-245F',
+           'British Aerospace BAE-146-100', 'Boeing 727-290',
+           'Mcdonnell Douglas DC-8-73F', 'Boeing B-727-200A',
+           'Boeing 727-254', 'Boeing 747-446B', 'Boeing B-727-29',
+           'British Aerospace 146-200', 'Boeing 727-214A',
+           'Lockheed L1011-385', 'Mcdonnell Douglas DC8-55',
+           'Boeing 747-269BC', 'British Aerospace 146-300A', 'Boeing 747-368',
+           'Boeing 707-341', 'Boeing 727-276', 'Boeing 747-240',
+           'Boeing 747-273C', 'Mcdonnell Douglas DC-10-15', 'Boeing 727-2K5',
+           'Boeing 747-2R7F', 'Lockheed L-1011-385-1-15', 'Douglas DC-8F-55',
+           'Boeing 727-212', 'Boeing 727-2Q8', 'Boeing 747-4F6B',
+           'Dassault DA-900B', 'Boeing B-727-61', 'Boeing B-727-100',
+           'Boeing 747-256', 'Dassault Aviation FALCON 900EX',
+           'Dassault Aviation DA-50', 'Airbus Industrie A340-300',
+           'Airbus A340-300', 'Lockheed 1329-23E', 'Boeing 747SR-146B SF',
+           'British Aerospace AVRO 146-RJ85A', 'Dassault FALCON900',
+           'Douglas DC-8-73F', 'Douglas DC8', 'Boeing 747-300 SERIES',
+           'Boeing 747-451', 'Mcdonnell Douglas MD-10-30F',
+           'Airbus A340 - 300',
+           'Bae Systems (Operations) Limit AVRO 146-RJ85',
+           'Bae AVRO146RJ - 100', 'Boeing 747 422',
+           'British Aerospace AVRO  146'], dtype=object)
+
+
+
+
+```python
+engine_type_filtered=filtered_df.groupby('Engine.Type')['Aircraft_type'].unique().reset_index(name= 'AircraftsTypes')
+```
+
+
+```python
+TurboFan_aircrafts =engine_type_filtered[engine_type_filtered['Engine.Type'] == 'Turbo Fan']
+TurboFan_aircrafts
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Engine.Type</th>
+      <th>AircraftsTypes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Turbo Fan</td>
+      <td>[Mcdonnell-Douglas DC-10-10, Mcdonnell-Douglas...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+# list of aircrafts with Turbo Fan engines
+list(TurboFan_aircrafts['AircraftsTypes'])
+```
+
+
+
+
+    [array(['Mcdonnell-Douglas DC-10-10', 'Mcdonnell-Douglas DC-10-30',
+            'Boeing 727-31H', 'Boeing 727-231A', 'Boeing 727-21',
+            'Lockheed 1329-25', 'Boeing 747-230', 'British Aerospace BAE-146',
+            'Mcdonnell Douglas DC-8-73', 'Mcdonnell Douglas DC-8-54',
+            'Mcdonnell Douglas DC-8-71', 'Boeing 727-25C', 'Boeing 727-25',
+            'Mcdonnell Douglas DC-10', 'Boeing 727-122', 'Boeing 747-245F',
+            'British Aerospace BAE-146-100', 'Boeing 727-290',
+            'Mcdonnell Douglas DC-8-73F', 'Boeing B-727-200A',
+            'Boeing 707-323B', 'Boeing 727-254', 'Boeing 747-446B',
+            'British Aerospace 146-200', 'Boeing 727-214A',
+            'British Aerospace 146-300A', 'Boeing 747-368', 'Boeing 707-341',
+            'Boeing 747-240', 'Boeing 747-273C', 'Mcdonnell Douglas DC-10-15',
+            'Boeing 727-2K5', 'Boeing 747-2R7F', 'Lockheed L-1011-385-1-15',
+            'Douglas DC-8F-55', 'Boeing 727-212', 'Boeing 727-2Q8',
+            'Boeing 747-4F6B', 'Dassault DA-900B', 'Boeing B-727-100',
+            'Boeing 747-256', 'Dassault Aviation FALCON 900EX',
+            'Dassault Aviation DA-50', 'Airbus Industrie A340-300',
+            'Airbus A340-300', 'Lockheed 1329-23E', 'Boeing 747SR-146B SF',
+            'Dassault FALCON900', 'Douglas DC-8-73F', 'Douglas DC8',
+            'Mcdonnell Douglas MD-10-30F', 'Airbus A340 - 300',
+            'Bae Systems (Operations) Limit AVRO 146-RJ85',
+            'Bae AVRO146RJ - 100', 'Boeing 747 422',
+            'British Aerospace AVRO  146'], dtype=object)]
+
+
+
+
+```python
+TurboJet_aircrafts =engine_type_filtered[engine_type_filtered['Engine.Type'] == 'Turbo Jet']
+```
+
+
+```python
+# list of aircrafts with Turbo Jet engines
+
+list(TurboJet_aircrafts['AircraftsTypes'])
+```
+
+
+
+
+    [array(['Mcdonnell Douglas DC 8-61', 'Boeing B727-023', 'Boeing B-727-90C',
+            'Boeing 727-51', 'Boeing 727-200B', 'Boeing 727-023',
+            'Boeing 727-22C', 'Boeing 707-323B', 'Boeing B-727-29',
+            'Boeing 727-254', 'Lockheed L1011-385', 'Mcdonnell Douglas DC8-55',
+            'Boeing 747-269BC', 'Boeing 727-276', 'Boeing 727-25C',
+            'Mcdonnell Douglas DC-10', 'Boeing B-727-61',
+            'British Aerospace AVRO 146-RJ85A', 'Boeing 747-300 SERIES',
+            'Boeing 747-451'], dtype=object)]
 
 
 
