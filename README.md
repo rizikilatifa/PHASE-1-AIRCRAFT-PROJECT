@@ -1219,6 +1219,37 @@ safe_type_of_engines
 
 
 ```python
+#Group and count combinations of Engine count vs Type of investigation
+engine_damage_counts = aircraft_data.groupby(['Engine.Type', 'Aircraft.damage']).size().unstack(fill_value=0)
+
+# Rename the columns for clarity
+engine_type_damage_counts.columns = ['Minor','Substantial', 'Destroyed', 'Unknown']
+
+# Plot using fig and ax
+fig, ax = plt.subplots(figsize=(10, 8))
+engine_damage_counts.plot(kind='bar', ax=ax,stacked= True, color=['skyblue', 'salmon','orange','red'])
+
+#Customize the plot
+ax.set_title('Engine Damage Severity by Engine Type', pad=20, fontweight='bold')
+ax.set_xlabel('Number of Engines', labelpad=10)
+ax.set_ylabel('Number of incidents',labelpad=10)
+ax.legend(title='Damage Severity' ,bbox_to_anchor=(1.05,1), loc= 2)
+ax.set_xticklabels(engine_type_damage_counts.index.astype(str),rotation=0)
+
+
+plt.tight_layout()
+plt.show()
+
+```
+
+
+    
+![png](README_files/README_61_0.png)
+    
+
+
+
+```python
 # create a list of engine type with less than 2 score
 safe_engine_type = list(engine_score[engine_score < 2].index)
 safe_engine_type
@@ -1279,7 +1310,7 @@ plt.show()
 
 
     
-![png](README_files/README_65_0.png)
+![png](README_files/README_66_0.png)
     
 
 
@@ -1580,7 +1611,7 @@ plt.show()
 
 
     
-![png](README_files/README_71_0.png)
+![png](README_files/README_72_0.png)
     
 
 
@@ -1604,7 +1635,7 @@ plt.show()
 
 
     
-![png](README_files/README_74_0.png)
+![png](README_files/README_75_0.png)
     
 
 
